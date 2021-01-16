@@ -6,6 +6,11 @@ use ggez::timer;
 use ggez::{Context, ContextBuilder, GameResult};
 use rand::prelude::*;
 
+// dimensions
+const SCREEN_WIDTH: f32 = 400.0;
+const SCREEN_HEIGHT: f32 = 600.0;
+
+// colors
 const BACKGROUND_COLOR: (u8, u8, u8) = (186, 220, 88);
 const BUBBLE_COLOR: (u8, u8, u8) = (106, 176, 76);
 
@@ -40,8 +45,8 @@ struct Bubble {
 impl Bubble {
     fn rand() -> Bubble {
         let mut range = rand::thread_rng();
-        let x: f32 = range.gen::<f32>() * 400.0;
-        let y: f32 = range.gen::<f32>() * 600.0;
+        let x: f32 = range.gen::<f32>() * SCREEN_WIDTH;
+        let y: f32 = range.gen::<f32>() * SCREEN_HEIGHT;
         let radius: f32 = range.gen::<f32>() * 120.0;
         let speed: f32 = range.gen::<f32>();
 
@@ -59,7 +64,7 @@ impl Bubble {
             graphics::DrawMode::fill(),
             na::Point2::new(self.x, self.y),
             self.radius,
-            0.20,
+            0.10,
             graphics::Color::from(BUBBLE_COLOR),
         )?;
         graphics::draw(ctx, &circle, graphics::DrawParam::default())
@@ -69,8 +74,8 @@ impl Bubble {
         let dt = timer::delta(ctx);
         self.y = self.y - self.speed * dt.as_secs_f32() * 16.0;
 
-        if self.y + self.radius <= 0.0 {
-            self.y = 600.0 + self.radius;
+        if self.y + self.radius < 0.0 {
+            self.y = SCREEN_HEIGHT + self.radius;
         }
 
         Ok(())
@@ -82,29 +87,17 @@ fn main() -> GameResult {
         .window_setup(conf::WindowSetup::default().title("Lava Lamp"))
         .window_mode(
             conf::WindowMode::default()
-                .dimensions(400 as _, 600 as _)
+                .dimensions(SCREEN_WIDTH, SCREEN_HEIGHT)
                 .resizable(false),
         )
         .build()?;
 
-    let state = &mut GameState {
-        bubbles: vec![
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-            Bubble::rand(),
-        ],
-    };
+    let mut bubbles = vec![];
+
+    for _ in 0..15 {
+        bubbles.push(Bubble::rand());
+    }
+
+    let state = &mut GameState { bubbles };
     event::run(ctx, event_loop, state)
 }
